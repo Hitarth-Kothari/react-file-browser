@@ -14,6 +14,8 @@ const FileBrowser = ({
   const [contextMenu, setContextMenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredExplorer, setFilteredExplorer] = useState(explorer.items || []);
+  const [expandedNodes, setExpandedNodes] = useState({});
+  const [matchedPath, setMatchedPath] = useState([]); // New state to store the path of the matched item
 
   const handleNewFolder = (isFolder) => {
     setExpand(true);
@@ -65,20 +67,102 @@ const FileBrowser = ({
     setContextMenu(null);
   };
 
+  const filterRecursive = (node, path = []) => {
+    const isMatch = node.name.toLowerCase().includes(searchTerm);
+    const newPath = [...path, node.id];
+  
+    if (isMatch) {
+      newPath.forEach((nodeId) => {
+        setExpandedNodes((prevExpanded) => ({
+          ...prevExpanded,
+          [nodeId]: true,
+        }));
+      });
+  
+      // Store the path of the matched item
+      setMatchedPath(newPath);
+    }
+  
+    if (node.items) {
+      for (const item of node.items) {
+        const result = filterRecursive(item, newPath);
+        if (result) {
+          return result; // Return the path if matched
+        }
+      }
+    }
+  
+    return isMatch ? newPath : null; // Return the path if matched, otherwise null
+  };
+  
+
+  const pruneItems = (node, pathToPrune) => {
+    if (!node.items) {
+      return node;
+    }
+  
+    const prunedItems = node.items
+      .map((item) => isItemInPath(item, pathToPrune) ? pruneItems(item, pathToPrune) : null)
+      .filter(Boolean);
+  
+    return { ...node, items: prunedItems };
+  };
+  
+  const clearSearch = () => {
+    setSearchTerm("");
+    setFilteredExplorer(explorer.items || []);
+    setExpandedNodes({});
+    setMatchedPath([]); // Clear the matched path when search is cleared
+  };
+  
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
+  
+    if (term === "") {
+      clearSearch();
+      return;
+    }
+  
+    const matchedPath = explorer.items
+      .map((item) => filterRecursive(item))
+      .filter(Boolean)[0];
 
-    // Filter the explorer data based on the search term
-    const filteredData = explorer.items.filter(
-      (item) => item.name.toLowerCase().includes(term)
-    );
-    setFilteredExplorer(filteredData);
+    const prunedExplorer = pruneItems(explorer, matchedPath);
+  
+    const filteredData = prunedExplorer.items[0];
+
+    setFilteredExplorer([filteredData]);
   };
+  
+  const isItemInPath = (item, path) => {
+    if (!path) return false;
+    for (let i = 0; i < path.length; i++) {
+      if (path[i] === item.id) {
+        return true;
+      }
+    }
+    return false;
+  };
+  
 
   useEffect(() => {
     setFilteredExplorer(explorer.items || []);
   }, [explorer]);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (contextMenu && !e.target.closest(".context-menu")) {
+        closeContextMenu();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [contextMenu]);
 
   return (
     <div style={{ marginTop: 5, paddingLeft: 10 }}>
@@ -145,6 +229,8 @@ const FileBrowser = ({
             handleRenameNode={handleRenameNode}
             key={exp.id}
             explorer={exp}
+            expandedNodes={expandedNodes}
+            setExpandedNodes={setExpandedNodes}
           />
         ))}
       </div>

@@ -32,6 +32,12 @@ const explorer = {
             name: "public_nested_file",
             isFolder: false,
             items: []
+          },
+          {
+            id:"12",
+            name: "test",
+            isFolder: true,
+            items: []
           }
         ]
       },
