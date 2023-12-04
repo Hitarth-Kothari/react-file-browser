@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from "react";
 
-const FileBrowser = ({ handleInsertNode = () => {}, handleDeleteNode = () => {}, handleRenameNode = () => {}, explorer }) => {
+const FileBrowser = ({
+  handleInsertNode,
+  handleDeleteNode,
+  handleRenameNode,
+  explorer,
+}) => {
   const [expand, setExpand] = useState(false);
   const [showInput, setShowInput] = useState({
     visible: false,
     isFolder: false,
   });
   const [contextMenu, setContextMenu] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredExplorer, setFilteredExplorer] = useState(explorer.items || []);
 
   const handleNewFolder = (isFolder) => {
     setExpand(true);
@@ -58,24 +65,33 @@ const FileBrowser = ({ handleInsertNode = () => {}, handleDeleteNode = () => {},
     setContextMenu(null);
   };
 
+  const handleSearch = (e) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    // Filter the explorer data based on the search term
+    const filteredData = explorer.items.filter(
+      (item) => item.name.toLowerCase().includes(term)
+    );
+    setFilteredExplorer(filteredData);
+  };
+
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      // Close context menu if clicked outside
-      if (contextMenu && !e.target.closest(".context-menu")) {
-        closeContextMenu();
-      }
-    };
-
-    document.addEventListener("click", handleClickOutside);
-
-    return () => {
-      // Cleanup the event listener on component unmount
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, [contextMenu]);
+    setFilteredExplorer(explorer.items || []);
+  }, [explorer]);
 
   return (
     <div style={{ marginTop: 5, paddingLeft: 10 }}>
+      {explorer.id === "1" && (
+        <input
+          type="text"
+          placeholder="Search files and folders..."
+          value={searchTerm}
+          onChange={handleSearch}
+          style={{ marginBottom: 10 }}
+        />
+      )}
+
       <div
         onClick={() => setExpand(!expand)}
         onContextMenu={handleContextMenu}
@@ -91,10 +107,10 @@ const FileBrowser = ({ handleInsertNode = () => {}, handleDeleteNode = () => {},
           {explorer && explorer.name}
         </span>
       </div>
-      
+
       {contextMenu && (
         <div
-          className="context-menu"  // Apply the context-menu class
+          className="context-menu" // Apply the context-menu class
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
           {explorer.isFolder && (
@@ -103,9 +119,7 @@ const FileBrowser = ({ handleInsertNode = () => {}, handleDeleteNode = () => {},
           {explorer.isFolder && (
             <div onClick={() => handleNewFolder(false)}>Add File</div>
           )}
-          {explorer.id != "1" && (
-            <div onClick={onDeleteNode}>Delete</div>
-          )}
+          {explorer.id !== "1" && <div onClick={onDeleteNode}>Delete</div>}
           <div onClick={onRenameNode}>Rename</div>
         </div>
       )}
@@ -124,17 +138,15 @@ const FileBrowser = ({ handleInsertNode = () => {}, handleDeleteNode = () => {},
           </div>
         )}
 
-        {explorer &&
-          explorer.items &&
-          explorer.items.map((exp) => (
-            <FileBrowser
-              handleInsertNode={handleInsertNode}
-              handleDeleteNode={handleDeleteNode}
-              handleRenameNode={handleRenameNode}
-              key={exp.id}
-              explorer={exp}
-            />
-          ))}
+        {filteredExplorer.map((exp) => (
+          <FileBrowser
+            handleInsertNode={handleInsertNode}
+            handleDeleteNode={handleDeleteNode}
+            handleRenameNode={handleRenameNode}
+            key={exp.id}
+            explorer={exp}
+          />
+        ))}
       </div>
     </div>
   );
