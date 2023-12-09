@@ -238,4 +238,15 @@ const FileBrowser = ({
   );
 };
 
-export default FileBrowser;
+const mapStateToProps = (state) => ({
+  explorer: state.explorer,
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  handleInsertNode: (folderId, item, isFolder) => dispatch(insertNode(folderId, item, isFolder)),
+  handleDeleteNode: (nodeId) => dispatch(deleteNode(nodeId)),
+  handleRenameNode: (nodeId, newName) => dispatch(renameNode(nodeId, newName)),
+  handleSaveContent: (nodeId, content) => dispatch(saveContent(nodeId, content)),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(FileBrowser);
