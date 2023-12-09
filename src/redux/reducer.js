@@ -1,9 +1,8 @@
-// fileReducers.js
-
 import * as actionTypes from "./actions";
+import explorerData from "../data/folderData";
 
 const initialState = {
-  items: JSON.parse(localStorage.getItem("fileTree")) || [],
+  items: JSON.parse(localStorage.getItem("fileTree")) || [explorerData],
 };
 
 const insertNode = (tree, folderId, itemName, isFolder) => {
@@ -33,13 +32,17 @@ const insertNode = (tree, folderId, itemName, isFolder) => {
   return updatedTree;
 };
 
+
 const deleteNode = (tree, nodeId) => {
-  const updatedTree = {
-    ...tree,
-    items: tree.items
-      .map((item) => (item.id === nodeId ? null : deleteNode(item, nodeId)))
-      .filter(Boolean),
-  };
+  let updatedItems = tree.items.map((item) => {
+    if (item.id === nodeId) {
+      return null;
+    } else if (item.isFolder) {
+      return { ...item, items: deleteNode(item, nodeId).items };
+    }
+    return item;
+  }).filter(Boolean);
+  const updatedTree = { ...tree, items: updatedItems }
   localStorage.setItem("fileTree", JSON.stringify(updatedTree.items));
   return updatedTree;
 };
@@ -72,7 +75,7 @@ const updateContent = (tree, nodeId, newContent) => {
 
 const fileReducer = (state = initialState, action) => {
   switch (action.type) {
-    case actionTypes.ADD_NODE:
+    case actionTypes.INSERT_NODE:
       return { ...state, items: insertNode(state, action.payload.folderId, action.payload.itemName, action.payload.isFolder).items };
 
     case actionTypes.DELETE_NODE:

@@ -1,18 +1,17 @@
-// fileActions.js
-
-export const ADD_NODE = "ADD_NODE";
+// src/redux/actions.js
+export const INSERT_NODE = "INSERT_NODE";
 export const DELETE_NODE = "DELETE_NODE";
 export const RENAME_NODE = "RENAME_NODE";
-export const UPDATE_CONTENT = "UPDATE_CONTENT";
+export const UPDATE_CONTENT = "UPDATE_CONTENT"; // Add this line
 
-export const addNode = (folderId, itemName, isFolder) => ({
-  type: ADD_NODE,
+export const insertNode = (folderId, itemName, isFolder) => ({
+  type: INSERT_NODE,
   payload: { folderId, itemName, isFolder },
 });
 
 export const deleteNode = (nodeId) => ({
   type: DELETE_NODE,
-  payload: nodeId,
+  payload: { nodeId },
 });
 
 export const renameNode = (nodeId, newName) => ({
@@ -20,7 +19,7 @@ export const renameNode = (nodeId, newName) => ({
   payload: { nodeId, newName },
 });
 
-export const updateContent = (nodeId, newContent) => ({
+export const saveContent = (nodeId, content) => ({
   type: UPDATE_CONTENT,
-  payload: { nodeId, newContent },
+  payload: { nodeId, content },
 });

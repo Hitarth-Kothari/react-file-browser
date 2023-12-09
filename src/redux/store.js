@@ -1,6 +1,6 @@
 // store.js
 import { createStore, combineReducers } from 'redux';
-import explorerReducer from './reducers';
+import explorerReducer from './reducer';
 
 const rootReducer = combineReducers({
   explorer: explorerReducer,

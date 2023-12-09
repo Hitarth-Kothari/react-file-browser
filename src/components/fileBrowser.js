@@ -1,9 +1,13 @@
+// src/components/fileBrowser.js
 import React, { useState, useEffect } from "react";
+import { connect } from "react-redux";
+import { insertNode, deleteNode, renameNode, saveContent } from "../redux/actions";
 
 const FileBrowser = ({
   handleInsertNode,
   handleDeleteNode,
   handleRenameNode,
+  handleSaveContent,
   explorer,
 }) => {
   const [expand, setExpand] = useState(false);
@@ -13,9 +17,9 @@ const FileBrowser = ({
   });
   const [contextMenu, setContextMenu] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredExplorer, setFilteredExplorer] = useState(explorer.items || []);
+  const [filteredExplorer, setFilteredExplorer] = useState(explorer?.items || []);
   const [expandedNodes, setExpandedNodes] = useState({});
-  const [matchedPath, setMatchedPath] = useState([]); // New state to store the path of the matched item
+  const [matchedPath, setMatchedPath] = useState([]);
 
   const handleNewFolder = (isFolder) => {
     setExpand(true);
@@ -23,7 +27,7 @@ const FileBrowser = ({
       visible: true,
       isFolder,
     });
-    setContextMenu(null); // Close context menu
+    setContextMenu(null);
   };
 
   const onAddFolder = (value) => {
@@ -32,15 +36,13 @@ const FileBrowser = ({
   };
 
   const onDeleteNode = () => {
-    // Check if the node being deleted is the root
     if (explorer.id === "1") {
       alert("Cannot delete the root folder.");
       return;
     }
 
-    // Proceed with deletion for non-root nodes
     handleDeleteNode(explorer.id);
-    setContextMenu(null); // Close context menu after deleting
+    setContextMenu(null);
   };
 
   const onRenameNode = () => {
@@ -48,17 +50,22 @@ const FileBrowser = ({
     if (newName !== null) {
       handleRenameNode(explorer.id, newName);
     }
-    setContextMenu(null); // Close context menu after renaming
+    setContextMenu(null);
+  };
+
+  const onSaveContent = () => {
+    const content = prompt("Enter file content:", explorer.content);
+    if (content !== null) {
+      handleSaveContent(explorer.id, content);
+    }
   };
 
   const handleContextMenu = (e) => {
     e.preventDefault();
 
     if (explorer.isFolder) {
-      // Show all options for folders
       setContextMenu({ x: e.clientX, y: e.clientY });
     } else {
-      // Show only delete and rename options for files
       setContextMenu({ x: e.clientX, y: e.clientY, fileContextMenu: true });
     }
   };
@@ -70,7 +77,7 @@ const FileBrowser = ({
   const filterRecursive = (node, path = []) => {
     const isMatch = node.name.toLowerCase().includes(searchTerm);
     const newPath = [...path, node.id];
-  
+
     if (isMatch) {
       newPath.forEach((nodeId) => {
         setExpandedNodes((prevExpanded) => ({
@@ -78,63 +85,61 @@ const FileBrowser = ({
           [nodeId]: true,
         }));
       });
-  
-      // Store the path of the matched item
+
       setMatchedPath(newPath);
     }
-  
+
     if (node.items) {
       for (const item of node.items) {
         const result = filterRecursive(item, newPath);
         if (result) {
-          return result; // Return the path if matched
+          return result;
         }
       }
     }
-  
-    return isMatch ? newPath : null; // Return the path if matched, otherwise null
+
+    return isMatch ? newPath : null;
   };
-  
 
   const pruneItems = (node, pathToPrune) => {
     if (!node.items) {
       return node;
     }
-  
+
     const prunedItems = node.items
-      .map((item) => isItemInPath(item, pathToPrune) ? pruneItems(item, pathToPrune) : null)
+      .map((item) => (isItemInPath(item, pathToPrune) ? pruneItems(item, pathToPrune) : null))
       .filter(Boolean);
-  
+
     return { ...node, items: prunedItems };
   };
-  
+
   const clearSearch = () => {
     setSearchTerm("");
-    setFilteredExplorer(explorer.items || []);
+    setFilteredExplorer(explorer?.items || []);
     setExpandedNodes({});
-    setMatchedPath([]); // Clear the matched path when search is cleared
+    setMatchedPath([]);
   };
-  
+
   const handleSearch = (e) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-  
+
     if (term === "") {
       clearSearch();
       return;
     }
-  
-    const matchedPath = explorer.items
+
+    const matchedPath = explorer?.items
       .map((item) => filterRecursive(item))
       .filter(Boolean)[0];
 
     const prunedExplorer = pruneItems(explorer, matchedPath);
-  
-    const filteredData = prunedExplorer.items[0];
+
+    const filteredData = prunedExplorer?.items[0];
 
     setFilteredExplorer([filteredData]);
   };
-  
+
   const isItemInPath = (item, path) => {
     if (!path) return false;
     for (let i = 0; i < path.length; i++) {
@@ -144,11 +149,22 @@ const FileBrowser = ({
     }
     return false;
   };
-  
 
   useEffect(() => {
-    setFilteredExplorer(explorer.items || []);
+    if (!explorer) {
+      setExpand(false);
+      setShowInput({ visible: false, isFolder: false });
+      setContextMenu(null);
+      setSearchTerm("");
+      setFilteredExplorer([]);
+      setExpandedNodes({});
+      setMatchedPath([]);
+      return;
+    }
+  
+    setFilteredExplorer(explorer?.items || []);
   }, [explorer]);
+  
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -166,7 +182,7 @@ const FileBrowser = ({
 
   return (
     <div style={{ marginTop: 5, paddingLeft: 10 }}>
-      {explorer.id === "1" && (
+      {explorer?.id === "1" && (
         <input
           type="text"
           placeholder="Search files and folders..."
@@ -179,31 +195,32 @@ const FileBrowser = ({
       <div
         onClick={() => setExpand(!expand)}
         onContextMenu={handleContextMenu}
-        className={explorer.isFolder ? "folder" : "file"} // Dynamically assign class
+        className={explorer?.isFolder ? "folder" : "file"}
       >
         <span>
-          {explorer.isFolder && (
+          {explorer?.isFolder && (
             <span role="img" aria-label="folder" style={{ marginRight: 5 }}>
               {expand ? "🔽" : "▶️"}
             </span>
           )}
-          {explorer.isFolder ? "" : "📄"}
+          {explorer?.isFolder ? "" : "📄"}
           {explorer && explorer.name}
         </span>
       </div>
 
       {contextMenu && (
         <div
-          className="context-menu" // Apply the context-menu class
+          className="context-menu"
           style={{ top: contextMenu.y, left: contextMenu.x }}
         >
-          {explorer.isFolder && (
+          {explorer?.isFolder && (
             <div onClick={() => handleNewFolder(true)}>Add Folder</div>
           )}
-          {explorer.isFolder && (
+          {explorer?.isFolder && (
             <div onClick={() => handleNewFolder(false)}>Add File</div>
           )}
-          {explorer.id !== "1" && <div onClick={onDeleteNode}>Delete</div>}
+          {explorer?.id !== "1" && <div onClick={onDeleteNode}>Delete</div>}
+          {explorer?.isFolder || <div onClick={onSaveContent}>Save Content</div>}
           <div onClick={onRenameNode}>Rename</div>
         </div>
       )}
@@ -224,10 +241,11 @@ const FileBrowser = ({
 
         {filteredExplorer.map((exp) => (
           <FileBrowser
+            key={exp.id}
             handleInsertNode={handleInsertNode}
             handleDeleteNode={handleDeleteNode}
             handleRenameNode={handleRenameNode}
-            key={exp.id}
+            handleSaveContent={handleSaveContent}
             explorer={exp}
             expandedNodes={expandedNodes}
             setExpandedNodes={setExpandedNodes}
