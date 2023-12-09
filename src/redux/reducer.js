@@ -32,20 +32,33 @@ const insertNode = (tree, folderId, itemName, isFolder) => {
   return updatedTree;
 };
 
+const deleteNode = (tree, nodeIdObject) => {
+  const nodeId = nodeIdObject.nodeId;
 
-const deleteNode = (tree, nodeId) => {
-  let updatedItems = tree.items.map((item) => {
-    if (item.id === nodeId) {
+  const findAndDelete = (node) => {
+
+    if (node['id'] === nodeId) {
+      console.log('Reached here');
       return null;
-    } else if (item.isFolder) {
-      return { ...item, items: deleteNode(item, nodeId).items };
     }
-    return item;
-  }).filter(Boolean);
-  const updatedTree = { ...tree, items: updatedItems }
-  localStorage.setItem("fileTree", JSON.stringify(updatedTree.items));
+
+    if (node.isFolder) {
+      const updatedItems = node.items
+        .map(findAndDelete)
+        .filter(Boolean);
+
+      return { ...node, items: updatedItems };
+    }
+
+    return node;
+  };
+
+  const updatedTree = findAndDelete(tree);
+  console.log(updatedTree);
+  localStorage.setItem("fileTree", JSON.stringify(updatedTree));
   return updatedTree;
 };
+
 
 const renameNode = (tree, nodeId, newName) => {
   const updatedTree = {
