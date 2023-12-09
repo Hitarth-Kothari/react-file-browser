@@ -161,7 +161,6 @@ const FileBrowser = ({
       setMatchedPath([]);
       return;
     }
-  
     setFilteredExplorer(explorer?.items || []);
   }, [explorer]);
   

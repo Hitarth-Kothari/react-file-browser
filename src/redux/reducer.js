@@ -2,8 +2,11 @@ import * as actionTypes from "./actions";
 import explorerData from "../data/folderData";
 
 const initialState = {
-  items: JSON.parse(localStorage.getItem("fileTree")) || [explorerData],
+  items: Array.isArray(JSON.parse(localStorage.getItem("fileTree"))) ? 
+         JSON.parse(localStorage.getItem("fileTree")) : 
+         [explorerData],
 };
+
 
 const insertNode = (tree, folderId, itemName, isFolder) => {
   if (tree.id === folderId && tree.isFolder) {
@@ -34,15 +37,13 @@ const insertNode = (tree, folderId, itemName, isFolder) => {
 
 const deleteNode = (tree, nodeIdObject) => {
   const nodeId = nodeIdObject.nodeId;
+  console.log(tree);
 
   const findAndDelete = (node) => {
-
-    if (node['id'] === nodeId) {
-      console.log('Reached here');
+    if (node.id === nodeId) {
       return null;
     }
-
-    if (node.isFolder) {
+    if (node.isFolder || node.items.length>0) {
       const updatedItems = node.items
         .map(findAndDelete)
         .filter(Boolean);
@@ -54,7 +55,6 @@ const deleteNode = (tree, nodeIdObject) => {
   };
 
   const updatedTree = findAndDelete(tree);
-  console.log(updatedTree);
   localStorage.setItem("fileTree", JSON.stringify(updatedTree));
   return updatedTree;
 };
