@@ -81,10 +81,13 @@ const FileBrowser = ({
   };
 
   const handleFileClick = () => {
-    // Check if it's a file before triggering the content selection
     if (!explorer.isFolder) {
-      const content = explorer.content || ""; // Use empty string if content is undefined
-      onContentSelect(content, explorer.id);
+      const content = explorer.content || "";
+      onContentSelect(content, explorer.id, explorer.name);
+    }
+    else{
+      console.log('1');
+      onContentSelect(null, "0", "folder");
     }
   };
 
@@ -212,6 +215,7 @@ const FileBrowser = ({
               handleFileClick();
             } else {
               setExpand(!expand);
+              handleFileClick();
             }
           }}
           onContextMenu={handleContextMenu}

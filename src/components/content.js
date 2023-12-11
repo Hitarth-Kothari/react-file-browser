@@ -21,9 +21,10 @@ const FileContent = ({ content, onSaveContent }) => {
   return (
     <div>
       <div style={{ marginBottom: "10px" }}>
+        {content !== null && (
         <button onClick={editMode ? handleSave : handleToggleEdit}>
           {editMode ? "Save" : "Edit"}
-        </button>
+        </button>)}
       </div>
 
       {editMode ? (
@@ -32,21 +33,21 @@ const FileContent = ({ content, onSaveContent }) => {
             value={editedContent}
             onChange={(e) => setEditedContent(e.target.value)}
             style={{
-              width: "100%", // Make textarea fill the available width
-              minHeight: "500px", // Set a minimum height or adjust as needed
-              backgroundColor: "#333333", // Match the background color of the app
-              color: "white", // Text color
-              padding: "10px", // Padding for better aesthetics
+              width: "100%", 
+              minHeight: "500px",
+              backgroundColor: "#333333",
+              color: "white", 
+              padding: "10px",
             }}
           />
         </div>
       ) : (
         <div
           style={{
-            whiteSpace: "pre-wrap", // Preserve both spaces and newline characters
-            backgroundColor: "#333333", // Match the background color of the app
-            color: "white", // Text color
-            padding: "10px", // Padding for better aesthetics
+            whiteSpace: "pre-wrap",
+            backgroundColor: "#333333",
+            color: "white",
+            padding: "10px",
           }}
         >
           {editedContent}
