@@ -9,6 +9,25 @@ const initialState = {
 
 
 const insertNode = (tree, folderId, itemName, isFolder) => {
+  const fileExtensionsWithContent = ["txt", "js", "ts", "json"];
+  const fileExtension = itemName.split(".").pop().toLowerCase();
+
+  let initialContent = "";
+  if (fileExtensionsWithContent.includes(fileExtension)) {
+    if (fileExtension === "txt"){
+      initialContent = "Test"
+    }
+    else if (fileExtension === "js"){
+      initialContent = "{}"
+    }
+    else if (fileExtension === "ts"){
+      initialContent = "{}"
+    }
+    else if (fileExtension === "json"){
+      initialContent = "{}"
+    }
+  }
+
   if (tree.id === folderId && tree.isFolder) {
     const updatedTree = {
       ...tree,
@@ -17,7 +36,7 @@ const insertNode = (tree, folderId, itemName, isFolder) => {
           id: new Date().getTime(),
           name: itemName,
           isFolder: isFolder,
-          content: isFolder ? "" : "Hello World",
+          content: initialContent,
           items: [],
         },
         ...tree.items,
@@ -34,6 +53,7 @@ const insertNode = (tree, folderId, itemName, isFolder) => {
   localStorage.setItem("fileTree", JSON.stringify(updatedTree.items));
   return updatedTree;
 };
+
 
 const deleteNode = (tree, nodeIdObject) => {
   const nodeId = nodeIdObject.nodeId;
