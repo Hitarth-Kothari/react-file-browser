@@ -10,7 +10,7 @@ const FileBrowser = ({
   handleSaveContent,
   explorer,
 }) => {
-  const [expand, setExpand] = useState(false);
+  const [expand, setExpand] = useState(true);
   const [showInput, setShowInput] = useState({
     visible: false,
     isFolder: false,
@@ -191,21 +191,32 @@ const FileBrowser = ({
         />
       )}
 
-      <div
-        onClick={() => setExpand(!expand)}
-        onContextMenu={handleContextMenu}
-        className={explorer?.isFolder ? "folder" : "file"}
-      >
-        <span>
-          {explorer?.isFolder && (
-            <span role="img" aria-label="folder" style={{ marginRight: 5 }}>
-              {expand ? "🔽" : "▶️"}
-            </span>
-          )}
-          {explorer?.isFolder ? "" : "📄"}
-          {explorer && explorer.name}
-        </span>
-      </div>
+      {explorer?.id !== undefined && (
+        <div
+          onClick={() => setExpand(!expand)}
+          onContextMenu={handleContextMenu}
+          className={explorer?.isFolder ? "folder" : "file"}
+        >
+          <span>
+            {explorer?.isFolder && (
+              <span role="img" aria-label="folder" style={{ marginRight: 5 }}>
+                {expand ? "🔽" : "▶️"}
+              </span>
+            )}
+            {explorer?.isFolder ? "" : "📄"}
+            {explorer && explorer.name}
+          </span>
+        </div>
+      )}
+
+      {explorer?.id === undefined && (
+        <div
+          // onContextMenu={handleContextMenu}
+          // className={explorer?.isFolder ? "folder" : "file"}
+        >
+          {/* No content will be displayed when explorer.id is undefined */}
+        </div>
+      )}
 
       {contextMenu && (
         <div
