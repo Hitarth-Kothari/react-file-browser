@@ -2,12 +2,14 @@
 import React, { useState, useEffect } from "react";
 import { connect } from "react-redux";
 import { insertNode, deleteNode, renameNode, saveContent } from "../redux/actions";
+import FileContent from "./content";
 
 const FileBrowser = ({
   handleInsertNode,
   handleDeleteNode,
   handleRenameNode,
   handleSaveContent,
+  onContentSelect,
   explorer,
 }) => {
   const [expand, setExpand] = useState(true);
@@ -72,6 +74,18 @@ const FileBrowser = ({
 
   const closeContextMenu = () => {
     setContextMenu(null);
+  };
+
+  const onContentSave = (content) => {
+    handleSaveContent(explorer.id, content);
+  };
+
+  const handleFileClick = () => {
+    // Check if it's a file before triggering the content selection
+    if (!explorer.isFolder) {
+      const content = explorer.content || ""; // Use empty string if content is undefined
+      onContentSelect(content, explorer.id);
+    }
   };
 
   const filterRecursive = (node, path = []) => {
@@ -193,7 +207,13 @@ const FileBrowser = ({
 
       {explorer?.id !== undefined && (
         <div
-          onClick={() => setExpand(!expand)}
+          onClick={() => {
+            if (!explorer.isFolder) {
+              handleFileClick();
+            } else {
+              setExpand(!expand);
+            }
+          }}
           onContextMenu={handleContextMenu}
           className={explorer?.isFolder ? "folder" : "file"}
         >
@@ -211,10 +231,8 @@ const FileBrowser = ({
 
       {explorer?.id === undefined && (
         <div
-          // onContextMenu={handleContextMenu}
-          // className={explorer?.isFolder ? "folder" : "file"}
         >
-          {/* No content will be displayed when explorer.id is undefined */}
+          {}
         </div>
       )}
 
@@ -256,6 +274,7 @@ const FileBrowser = ({
             handleDeleteNode={handleDeleteNode}
             handleRenameNode={handleRenameNode}
             handleSaveContent={handleSaveContent}
+            onContentSelect={onContentSelect}
             explorer={exp}
             expandedNodes={expandedNodes}
             setExpandedNodes={setExpandedNodes}

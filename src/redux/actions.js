@@ -19,7 +19,7 @@ export const renameNode = (nodeId, newName) => ({
   payload: { nodeId, newName },
 });
 
-export const saveContent = (nodeId, content) => ({
+export const saveContent = (nodeId, newContent) => ({
   type: UPDATE_CONTENT,
-  payload: { nodeId, content },
+  payload: { nodeId, newContent },
 });
